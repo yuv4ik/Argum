@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Argum")]
 [assembly: AssemblyDescription("Library to interact with command line arguments.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("yuv4ik")]
 [assembly: AssemblyProduct("Argum")]
 [assembly: AssemblyCopyright("Copyright yuv4ik©  2016")]
 [assembly: AssemblyTrademark("")]
