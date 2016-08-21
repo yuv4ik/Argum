@@ -1,23 +1,12 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using ArgumTests;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Argum.Tests
 {
     [TestClass()]
-    public class ArgumTests
+    public class ArgumExtractorValueTests : ArgumExtractorTests
     {
-        private IDictionary<string, object> inputArgs = new Dictionary<string, object>
-        {
-            { "string", "one" },
-            { "int", 1 },
-            { "double", 1.3 },
-            { "bool", bool.TrueString },
-            { "dateTime", DateTime.Parse("02/09/1988") },
-            { "float", 1.3f }
-        };
-
         [TestMethod()]
         public void GetStringArgumentTest()
         {
@@ -88,7 +77,7 @@ namespace Argum.Tests
         }
 
         [TestMethod()]
-        public void GeFloatArgumentTest()
+        public void GetFloatArgumentTest()
         {
             // Arrange
             var argum = GenerateArgumExtractor(GenerateInput());
@@ -102,16 +91,17 @@ namespace Argum.Tests
         }
 
         [TestMethod()]
-        [ExpectedException(typeof(ArgumException))]
-        public void GetUnknowsArgumentTest()
+        public void GetCharArgumentTest()
         {
             // Arrange
             var argum = GenerateArgumExtractor(GenerateInput());
+            var argKey = "char";
 
             // Act
-            var res = argum.GetArgument<bool>("non-existing-element");
+            var res = argum.GetArgument<char>(argKey);
 
             // Assert
+            Assert.AreEqual(res, inputArgs[argKey]);
         }
 
         [TestMethod()]
@@ -126,15 +116,5 @@ namespace Argum.Tests
 
             // Assert
         }
-
-        private string[] GenerateInput()
-        {
-            var result = new List<string>();
-            inputArgs.ToList().ForEach(p => result.Add($"--{p.Key}={p.Value}"));
-
-            return result.ToArray();
-        }
-
-        private ArgumExtractor GenerateArgumExtractor(string[] args) => new ArgumExtractor(args);
     }
 }

@@ -8,12 +8,27 @@ namespace Argum
     /// </summary>
     public class ArgumExtractor
     {
-
+        /// <summary>
+        /// <para>Case insensitive flag.</para>
+        /// <para>False by default.</para>
+        /// </summary>
+        public bool IsCaseInsensitive { get; set; }
+        /// <summary>
+        /// <para>Argument key prefix.</para>
+        /// <para>'--' by default.</para>
+        /// </summary>
+        public string KeyPrefix { get; set; } = "--";
+        /// <summary>
+        /// <para>Argument key postfix.</para>
+        /// <para>'=' by default.</para>
+        /// </summary>
+        public string KeyPostfix { get; set; } = "=";
+        /// <summary>
+        /// <para>Input command line arguments.</para>
+        /// <para>By default expects: --arg1=val1 --arg2=val2</para>
+        /// </summary>
         private string[] input;
 
-        /// <summary>
-        /// </summary>
-        /// <param name="args">Expects the input in the next format: --arg1=val1 --arg2=val2</param>
         public ArgumExtractor(string[] args)
         {
             input = args;
@@ -30,14 +45,38 @@ namespace Argum
         {
             try
             {
-                var argKey = $"--{arg}=";
-                var argVal = input.First(x => x.StartsWith(argKey));
-                return (T)Convert.ChangeType(argVal.Replace(argKey, string.Empty), typeof(T));
+                var argKey = GenerateArgumentKey(arg);
+                var argVal = GetArgumentValueByKey(argKey);
+                return (T)Convert.ChangeType(argVal, typeof(T));
             }
             catch (Exception ex)
             {
                 throw new ArgumException($"GetArgument {arg} is failed with:", ex);
             }
+        }
+
+        /// <summary>
+        /// <para>Returns a command line parameter key.</para>
+        /// </summary>
+        /// <param name="arg"></param>
+        /// <returns></returns>
+        private string GenerateArgumentKey(string arg)
+        {
+            var argKey = $"{KeyPrefix}{arg}{KeyPostfix}";
+            if (IsCaseInsensitive)
+                argKey = argKey.ToLowerInvariant();
+            return argKey;
+        }
+
+        /// <summary>
+        /// <para>Returns a command line parameter value by key.</para>
+        /// </summary>
+        /// <param name="argKey"></param>
+        /// <returns></returns>
+        private string GetArgumentValueByKey(string argKey)
+        {
+            var argVal = input.First(x => x.StartsWith(argKey));
+            return argVal.Replace(argKey, string.Empty);
         }
     }
 
