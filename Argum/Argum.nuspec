@@ -11,7 +11,7 @@
     <iconUrl>https://raw.githubusercontent.com/yuv4ik/Argum/master/icon.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <releaseNotes>Case sensitivity, key prefix and postfix made configurable.</releaseNotes>
+    <releaseNotes>Attributes mapping to properties.</releaseNotes>
     <copyright>Copyright 2016</copyright>
     <tags>cmd command line arguments args</tags>
   </metadata>
