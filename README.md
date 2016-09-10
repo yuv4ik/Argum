@@ -6,13 +6,13 @@ Supports primitive types, arrays and DateTime.<br/>
 class Program
 {
     [ArgumAttribute(name: "username", isMandatory: true, description: "Username argument.")]
-    static public DateTime[] Username { get; set; }
+    static public string Username { get; set; }
 
     [ArgumAttribute(name: "roles", isMandatory: true, description: "User roles argument.")]
     static public string[] Roles { get; set; }
 
     [ArgumAttribute(name: "bday", isMandatory: false, description: "Birthday argument.")]
-    static public DateTime[] BDay { get; set; }
+    static public DateTime BDay { get; set; }
 
     static void Main(string[] args)
     {
