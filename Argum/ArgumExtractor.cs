@@ -1,18 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Text;
 
 namespace Argum
 {
-    /// <summary>
-    /// <para>Responsible for extracting arguments from given input.</para>
-    /// </summary>
-    public class ArgumExtractor
+    public class ArgumExtractor<T>
     {
-        /// <summary>
-        /// <para>Case insensitive flag.</para>
-        /// <para>False by default.</para>
-        /// </summary>
-        public bool IsCaseInsensitive { get; set; }
         /// <summary>
         /// <para>Argument key prefix.</para>
         /// <para>'--' by default.</para>
@@ -28,56 +23,85 @@ namespace Argum
         /// <para>By default expects: --arg1=val1 --arg2=val2</para>
         /// </summary>
         private string[] input;
+        private IDictionary<string, object> arguments;
 
         public ArgumExtractor(string[] args)
         {
+            arguments = new Dictionary<string, object>();
             input = args;
         }
 
         /// <summary>
-        /// <para>Returns an argument value with appropriate type.</para>
-        /// <para>Throws ArgumException.</para>
+        /// <para>Maps user input to ArgumAttributes.</para>
         /// </summary>
-        /// <typeparam name="T">Output type</typeparam>
-        /// <param name="arg">Argument key</param>
-        /// <returns></returns>
-        public T GetArgument<T>(string arg)
+        public void Setup()
         {
             try
             {
-                var argKey = GenerateArgumentKey(arg);
-                var argVal = GetArgumentValueByKey(argKey);
-                return (T)Convert.ChangeType(argVal, typeof(T));
+                ParseUserInput();
+                Map();
             }
+            catch (ArgumException ex) { throw ex; }
             catch (Exception ex)
             {
-                throw new ArgumException($"GetArgument {arg} is failed with:", ex);
+                throw new ArgumException("Argum setup failed.", ex);
             }
         }
 
         /// <summary>
-        /// <para>Returns a command line parameter key.</para>
+        /// <para>Returns an auto-generated help message.</para>
         /// </summary>
-        /// <param name="arg"></param>
         /// <returns></returns>
-        private string GenerateArgumentKey(string arg)
+        public string GetHelpMessage()
         {
-            var argKey = $"{KeyPrefix}{arg}{KeyPostfix}";
-            if (IsCaseInsensitive)
-                argKey = argKey.ToLowerInvariant();
-            return argKey;
+            var help = new StringBuilder();
+            GetProperties().ToList().ForEach(prop =>
+            {
+                var attr = GetArgumAttribute(prop);
+                help.AppendLine($"{attr}");
+            });
+            return help.ToString();
         }
 
-        /// <summary>
-        /// <para>Returns a command line parameter value by key.</para>
-        /// </summary>
-        /// <param name="argKey"></param>
-        /// <returns></returns>
-        private string GetArgumentValueByKey(string argKey)
+        private void ParseUserInput()
         {
-            var argVal = input.First(x => x.StartsWith(argKey));
-            return argVal.Replace(argKey, string.Empty);
+            input.ToList().ForEach(arg =>
+            {
+                arguments.Add(ExtractArgumentKey(arg), ExtractArgumentValue(arg));
+            });
         }
+
+        private string ExtractArgumentValue(string arg)
+        {
+            var startIndex = arg.LastIndexOf(KeyPostfix) + 1;
+            return arg.Substring(startIndex);
+        }
+
+        private string ExtractArgumentKey(string arg)
+        {
+            var startIndex = arg.LastIndexOf(KeyPrefix) + KeyPrefix.Length;
+            var endIndex = arg.LastIndexOf(KeyPostfix) - KeyPostfix.Length - 1;
+            return arg.Substring(startIndex, endIndex).ToLowerInvariant();
+        }
+
+        private void Map()
+        {
+            GetProperties().ForEach(prop =>
+            {
+                var attr = GetArgumAttribute(prop);
+                var attributeName = attr.Name.ToLowerInvariant();
+
+                if (arguments.ContainsKey(attributeName))
+                    prop.SetValue(null, ArgumValueConverter.ConvertValue(arguments[attributeName], prop.PropertyType));
+                else if (attr.IsMandatory)
+                    throw new ArgumException($"Argument {attr.Name} is mandatory.", new ArgumentNullException());
+            });
+        }
+
+        private List<PropertyInfo> GetProperties() =>  typeof(T).GetProperties().ToList();
+
+        private ArgumAttribute GetArgumAttribute(PropertyInfo prop) => ((ArgumAttribute[])prop.GetCustomAttributes(typeof(ArgumAttribute), false)).FirstOrDefault();
+
     }
 
     public class ArgumException : Exception
@@ -85,4 +109,3 @@ namespace Argum
         public ArgumException(string message, Exception innerException) : base(message, innerException) { }
     }
 }
-

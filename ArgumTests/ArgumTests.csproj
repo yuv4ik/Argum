@@ -53,10 +53,9 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="ArgumExtractorTestBase.cs" />
     <Compile Include="ArgumExtractorTests.cs" />
-    <Compile Include="ArgumExtractorValueTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ArgumExtractorKeyTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Argum\Argum.csproj">
